@@ -1,0 +1,35 @@
+hash: 8614936ac908d8f1bac688786b13645f32c22cdd413bc3a10cf7ed62c2957bb6
+updated: 2017-07-31T09:39:07.514556185+02:00
+imports:
+- name: github.com/astaxie/beego
+  version: cab8458c1c4a5a3b4bf5192922be620e6dede15b
+  subpackages:
+  - config
+  - context
+  - context/param
+  - grace
+  - logs
+  - orm
+  - session
+  - toolbox
+  - utils
+- name: github.com/go-sql-driver/mysql
+  version: a0583e0143b1624142adab07e0e97fe106d99561
+testImports:
+- name: github.com/gopherjs/gopherjs
+  version: 2b1d432c8a82c9bff0b0baffaeb3ec6e92974112
+  subpackages:
+  - js
+- name: github.com/jtolds/gls
+  version: 77f18212c9c7edc9bd6a33d383a7b545ce62f064
+- name: github.com/smartystreets/assertions
+  version: 4ea54c1f28ad3ae597e76607dea3871fa177e263
+  subpackages:
+  - internal/go-render/render
+  - internal/oglematchers
+- name: github.com/smartystreets/goconvey
+  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
+  subpackages:
+  - convey
+  - convey/gotest
+  - convey/reporting
