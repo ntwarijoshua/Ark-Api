@@ -8,6 +8,7 @@
 package routers
 
 import (
+	_"github.com/joho/godotenv/autoload"
 	"ark-api/controllers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
@@ -95,6 +96,12 @@ func init() {
 			beego.NSRouter("/",&controllers.ProductController{},"post:Store"),
 			beego.NSRouter("/:id",&controllers.ProductController{},"put:Update"),
 			beego.NSRouter("/:id",&controllers.ProductController{},"delete:Destroy"),
+		),
+		beego.NewNamespace("suppliers",
+			beego.NSRouter("/",&controllers.SuppliersController{},"get:Index"),
+			beego.NSRouter("/",&controllers.SuppliersController{},"post:Store"),
+			beego.NSRouter("/:id",&controllers.SuppliersController{},"put:Update"),
+			beego.NSRouter("/:id",&controllers.SuppliersController{},"delete:Destroy"),
 		),
 	)
 

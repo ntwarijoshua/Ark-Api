@@ -58,7 +58,7 @@ func(c ProductCategoryController) Update(){
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
 	productCategory := models.ProductCategory{}
-	err := productCategory.FindOrFail(id)
+	err := models.FindOrFail(&productCategory,id)
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404
@@ -81,7 +81,7 @@ func(c ProductCategoryController) Update(){
 func (c ProductCategoryController) Destroy(){
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	productCategory := models.ProductCategory{}
-	err := productCategory.FindOrFail(id)
+	err := models.FindOrFail(&productCategory,id)
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404
@@ -125,7 +125,7 @@ func (c ProductController)Store(){
 		return
 	}
 	productCategory := models.ProductCategory{}
-	err := productCategory.FindOrFail(services.ConvertParametersToIntegers(input["product_category_id"]))
+	err := models.FindOrFail(&productCategory,services.ConvertParametersToIntegers(input["product_category_id"]))
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404
@@ -158,7 +158,7 @@ func (c ProductController)Update(){
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
 	product := models.Product{}
-	err := product.FindOrFail(id)
+	err := models.FindOrFail(&product,id)
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404
@@ -178,7 +178,7 @@ func (c ProductController)Update(){
 	}
 	if(input["product_category_id"] != ""){
 		productCategory := models.ProductCategory{}
-		err := productCategory.FindOrFail(services.ConvertParametersToIntegers(input["product_category_id"]))
+		err := models.FindOrFail(&productCategory,services.ConvertParametersToIntegers(input["product_category_id"]))
 		if(err != nil){
 			if(err == orm.ErrNoRows){
 				c.Ctx.Output.Status = 404
@@ -198,7 +198,7 @@ func (c ProductController)Update(){
 func (c ProductController)Destroy(){
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	product := models.Product{}
-	err := product.FindOrFail(id)
+	err := models.FindOrFail(&product,id)
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404

@@ -65,7 +65,7 @@ func(c UsersController) Update(){
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
 	user := models.User{}
-	err := user.FindOrFail(id)
+	err := models.FindOrFail(&user,id)
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404
@@ -92,7 +92,7 @@ func(c UsersController) Destroy(){
 	authenticatedUser := data["AuthenticatedUser"].(models.User)
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	user := models.User{}
-	err := user.FindOrFail(id)
+	err := models.FindOrFail(&user,id)
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404

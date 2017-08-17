@@ -75,7 +75,7 @@ func(c TenantsController) Update(){
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
 	tenant := models.Tenant{}
-	err := tenant.FindOrFail(id)
+	err := models.FindOrFail(&tenant,id)
 	if(err != nil){
 		if(err == orm.ErrNoRows){
 			c.Ctx.Output.Status = 404
@@ -101,7 +101,7 @@ func(c TenantsController) Destroy(){
 	activeTenant := data["ActiveTenant"].(models.Tenant)
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	tenant := models.Tenant{}
-	err := tenant.FindOrFail(id)
+	err := models.FindOrFail(&tenant,id)
 	if(err == orm.ErrNoRows && err != nil){
 		c.Ctx.Output.Status = 404
 		c.Data["json"] = map[string]string{"Error":"Resource not found"}

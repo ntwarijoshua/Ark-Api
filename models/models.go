@@ -5,11 +5,13 @@ import (
 	"github.com/astaxie/beego/orm"
 	"time"
 	"fmt"
+	"os"
 )
 var o orm.Ormer
 func init() {
+	fmt.Println("Datasource:",os.Getenv("DATA_SOURCE"))
 	orm.RegisterDriver("mysql",orm.DRMySQL)
-	orm.RegisterDataBase("default", "mysql", "root:root@/ark_api?charset=utf8", 30)
+	orm.RegisterDataBase("default", "mysql", os.Getenv("DATA_SOURCE"), 30)
 	name := "default"
 	force := false
 	verbose := true
@@ -19,6 +21,7 @@ func init() {
 		new(User),
 		new(ProductCategory),
 		new(Product),
+		new(Supplier),
 	)
 	err := orm.RunSyncdb(name,force,verbose)
 	if(err != nil){
@@ -26,6 +29,7 @@ func init() {
 	}
 	o = orm.NewOrm()
 }
+
 
 type BaseModel struct {
 	CreatedAt time.Time `orm:"column(created_at);type(datetime);auto_now_add"`
@@ -98,23 +102,6 @@ func(t User) FindByEmailOrFail(email string)(User,error)  {
 	return t,err
 }
 
-func(u *User)FindOrFail(id int)error{
-	temp := User{}
-	u.Id = id
-	q := o.QueryTable("user")
-	err := q.Filter("id",u.Id).One(&temp)
-	if err == nil{
-		u.Names = temp.Names
-		u.Email = temp.Email
-		u.UserName = temp.UserName
-		u.Password = temp.Password
-		u.Role = temp.Role
-		u.Tenant = temp.Tenant
-		u.CreatedAt = temp.CreatedAt
-		u.UpdatedAt = temp.UpdatedAt
-	}
-	return err
-}
 
 
 type ProductCategory struct {
@@ -123,21 +110,6 @@ type ProductCategory struct {
 	Description string
 	Tenant *Tenant `orm:"null;rel(fk);on_delete(cascade)"`
 	BaseModel
-}
-
-func(t *ProductCategory)FindOrFail(id int)error{
-	temp := ProductCategory{}
-	t.Id = id
-	q := o.QueryTable("product_category")
-	err := q.Filter("id",t.Id).One(&temp)
-	if err == nil{
-		t.Name = temp.Name
-		t.Description = temp.Description
-		t.Tenant = temp.Tenant
-		t.CreatedAt = temp.CreatedAt
-		t.UpdatedAt = temp.UpdatedAt
-	}
-	return err
 }
 type Product struct {
 	Id int
@@ -148,21 +120,15 @@ type Product struct {
 	Tenant *Tenant `orm:"null;rel(fk);on_delete(cascade)"`
 	BaseModel
 }
-func(t *Product)FindOrFail(id int)error{
-	temp := Product{}
-	t.Id = id
-	q := o.QueryTable("product")
-	err := q.Filter("id",t.Id).One(&temp)
-	if err == nil{
-		t.Name = temp.Name
-		t.Description = temp.Description
-		t.Photo = temp.Photo
-		t.ProductCategory = temp.ProductCategory
-		t.Tenant = temp.Tenant
-		t.CreatedAt = temp.CreatedAt
-		t.UpdatedAt = temp.UpdatedAt
-	}
-	return err
+
+type Supplier struct {
+	Id int
+	Names string
+	Company string `orm:"null"`
+	Email string `orm:"null"`
+	Mobile string
+	Tenant *Tenant `orm:"null;rel(fk);on_delete(cascade)"`
+	BaseModel
 }
 
 
@@ -170,7 +136,38 @@ func(t *Product)FindOrFail(id int)error{
 
 
 
+
 //Standalone Functions
+
+func FindOrFail(m interface{}, id int) error  {
+	switch t := m.(type)  {
+	case *Tenant:
+		q := o.QueryTable("tenant")
+		err := q.Filter("id",id).One(m.(*Tenant))
+		return err
+	case *User:
+		q := o.QueryTable("user")
+		err := q.Filter("id",id).One(m.(*User))
+		return err
+	case *ProductCategory:
+		q := o.QueryTable("product_category")
+		err := q.Filter("id",id).One(m.(*ProductCategory))
+		return err
+	case *Product:
+		q := o.QueryTable("product")
+		err := q.Filter("id",id).One(m.(*Product))
+		return err
+	case *Supplier:
+		q := o.QueryTable("supplier")
+		query := q.Filter("id",id)
+		err := finder(query,m.(*Supplier))
+		return err
+	default:
+		fmt.Println("Unsupported type: ",t)
+		return orm.ErrNoRows
+	}
+	return nil
+}
 
 func GetAdminRole()Role {
 	role := Role{}
@@ -187,5 +184,10 @@ func GetManagerRole()Role  {
 }
 
 
+//private functions
+
+func finder(q orm.QuerySeter,container interface{})error{
+	return q.One(container)
+}
 
 
