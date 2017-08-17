@@ -16,11 +16,11 @@ type TenantsController struct {
 
 var o orm.Ormer
 
-func init()  {
+func init() {
 	o = orm.NewOrm()
 }
 
-func(c TenantsController) Index(){
+func (c TenantsController) Index() {
 	tenants := []models.Tenant{}
 	q := o.QueryTable("tenant")
 	q.All(&tenants)
@@ -28,16 +28,15 @@ func(c TenantsController) Index(){
 	c.ServeJSON()
 }
 
-
-func(c TenantsController) Store(){
+func (c TenantsController) Store() {
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	valid := validation.Validation{}
-	valid.Required(input["name"],"name")
-	valid.Required(input["email"],"email")
-	valid.Email(input["email"],"email")
-	valid.Required(input["phone_number"],"Phone number")
-	if(valid.HasErrors()){
+	valid.Required(input["name"], "name")
+	valid.Required(input["email"], "email")
+	valid.Email(input["email"], "email")
+	valid.Required(input["phone_number"], "Phone number")
+	if (valid.HasErrors()) {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = valid.ErrorsMap
 		c.ServeJSON()
@@ -52,14 +51,14 @@ func(c TenantsController) Store(){
 		IsActive: true,
 		IsMaster: false,
 	}
-	if tenant,err := Newtenant.FindByEmailOrFail(input["email"]); err != orm.ErrNoRows && !reflect.DeepEqual(tenant,models.Tenant{}) {
+	if tenant, err := Newtenant.FindByEmailOrFail(input["email"]); err != orm.ErrNoRows && !reflect.DeepEqual(tenant, models.Tenant{}) {
 		c.Ctx.Output.Status = 400
-		c.Data["json"] = map[string]string{"Error":"Bad request","Message":"Tenant With Email Already Exists"}
+		c.Data["json"] = map[string]string{"Error":"Bad request", "Message":"Tenant With Email Already Exists"}
 		c.ServeJSON()
 		return
 	}
-	_,err := o.Insert(&Newtenant)
-	if err != nil{
+	_, err := o.Insert(&Newtenant)
+	if err != nil {
 		c.Ctx.Output.Status = 500
 		c.Data["json"] = err.Error()
 		c.ServeJSON()
@@ -69,25 +68,24 @@ func(c TenantsController) Store(){
 	c.ServeJSON()
 }
 
-
-func(c TenantsController) Update(){
+func (c TenantsController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	tenant := models.Tenant{}
-	err := models.FindOrFail(&tenant,id)
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&tenant, id)
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if(input["name"] != ""){
+	if (input["name"] != "") {
 		tenant.Name = input["name"]
 	}
-	if(input["phone_number"] != ""){
+	if (input["phone_number"] != "") {
 		tenant.PhoneNumber = input["phone_number"]
 	}
 	o.Update(&tenant)
@@ -95,20 +93,19 @@ func(c TenantsController) Update(){
 	c.ServeJSON()
 }
 
-
-func(c TenantsController) Destroy(){
+func (c TenantsController) Destroy() {
 	data := c.Ctx.Input.Data()
 	activeTenant := data["ActiveTenant"].(models.Tenant)
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	tenant := models.Tenant{}
-	err := models.FindOrFail(&tenant,id)
-	if(err == orm.ErrNoRows && err != nil){
+	err := models.FindOrFail(&tenant, id)
+	if (err == orm.ErrNoRows && err != nil) {
 		c.Ctx.Output.Status = 404
 		c.Data["json"] = map[string]string{"Error":"Resource not found"}
 		c.ServeJSON()
 		return
 	}
-	if(tenant.Id == activeTenant.Id){
+	if (tenant.Id == activeTenant.Id) {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = map[string]string{"Error":"Bad request"}
 		c.ServeJSON()

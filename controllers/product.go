@@ -13,24 +13,24 @@ type ProductCategoryController struct {
 	beego.Controller
 }
 
-func (c ProductCategoryController) Index(){
+func (c ProductCategoryController) Index() {
 	data := c.Ctx.Input.Data()
 	tenant := data["ActiveTenant"].(models.Tenant)
 	productCategories := []models.ProductCategory{}
 	q := o.QueryTable("product_category")
-	q.Filter("tenant_id",tenant.Id).RelatedSel("tenant").All(&productCategories)
+	q.Filter("tenant_id", tenant.Id).RelatedSel("tenant").All(&productCategories)
 	c.Data["json"] = productCategories
 	c.ServeJSON()
 }
 
-func(c ProductCategoryController) Store(){
+func (c ProductCategoryController) Store() {
 	data := c.Ctx.Input.Data()
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	valid := validation.Validation{}
-	valid.Required(input["name"],"name")
-	valid.Required(input["description"],"description")
-	if(valid.HasErrors()){
+	valid.Required(input["name"], "name")
+	valid.Required(input["description"], "description")
+	if (valid.HasErrors()) {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = valid.ErrorsMap
 		c.ServeJSON()
@@ -42,8 +42,8 @@ func(c ProductCategoryController) Store(){
 		Description:input["description"],
 		Tenant: &ActiveTenant,
 	}
-	_,err := o.Insert(&NewProductCategory)
-	if err != nil{
+	_, err := o.Insert(&NewProductCategory)
+	if err != nil {
 		c.Ctx.Output.Status = 500
 		c.Data["json"] = err.Error()
 		c.ServeJSON()
@@ -53,24 +53,24 @@ func(c ProductCategoryController) Store(){
 	c.ServeJSON()
 }
 
-func(c ProductCategoryController) Update(){
+func (c ProductCategoryController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	productCategory := models.ProductCategory{}
-	err := models.FindOrFail(&productCategory,id)
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&productCategory, id)
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if(input["name"] != ""){
+	if (input["name"] != "") {
 		productCategory.Name = input["name"]
 	}
-	if(input["description"] != ""){
+	if (input["description"] != "") {
 		productCategory.Description = input["description"]
 	}
 	o.Update(&productCategory)
@@ -78,12 +78,12 @@ func(c ProductCategoryController) Update(){
 	c.ServeJSON()
 }
 
-func (c ProductCategoryController) Destroy(){
+func (c ProductCategoryController) Destroy() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	productCategory := models.ProductCategory{}
-	err := models.FindOrFail(&productCategory,id)
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&productCategory, id)
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
@@ -95,39 +95,39 @@ func (c ProductCategoryController) Destroy(){
 	c.ServeJSON()
 }
 
-
 type ProductController struct {
 	beego.Controller
 }
-func (c ProductController)Index(){
+
+func (c ProductController) Index() {
 	data := c.Ctx.Input.Data()
 	tenant := data["ActiveTenant"].(models.Tenant)
 	products := []models.Product{}
 	q := o.QueryTable("product")
-	q.Filter("tenant_id",tenant.Id).RelatedSel("tenant","ProductCategory").All(&products)
+	q.Filter("tenant_id", tenant.Id).RelatedSel("tenant", "ProductCategory").All(&products)
 	c.Data["json"] = products
 	c.ServeJSON()
 }
 
-func (c ProductController)Store(){
+func (c ProductController) Store() {
 	data := c.Ctx.Input.Data()
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	valid := validation.Validation{}
-	valid.Required(input["name"],"name")
-	valid.Required(input["description"],"description")
-	valid.Required(input["photo"],"photo")
-	valid.Required(input["product_category_id"],"product category")
-	if(valid.HasErrors()){
+	valid.Required(input["name"], "name")
+	valid.Required(input["description"], "description")
+	valid.Required(input["photo"], "photo")
+	valid.Required(input["product_category_id"], "product category")
+	if (valid.HasErrors()) {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = valid.ErrorsMap
 		c.ServeJSON()
 		return
 	}
 	productCategory := models.ProductCategory{}
-	err := models.FindOrFail(&productCategory,services.ConvertParametersToIntegers(input["product_category_id"]))
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&productCategory, services.ConvertParametersToIntegers(input["product_category_id"]))
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
@@ -142,8 +142,8 @@ func (c ProductController)Store(){
 		ProductCategory: &productCategory,
 		Tenant: &ActiveTenant,
 	}
-	_,err = o.Insert(&NewProduct)
-	if err != nil{
+	_, err = o.Insert(&NewProduct)
+	if err != nil {
 		c.Ctx.Output.Status = 500
 		c.Data["json"] = err.Error()
 		c.ServeJSON()
@@ -153,34 +153,34 @@ func (c ProductController)Store(){
 	c.ServeJSON()
 }
 
-func (c ProductController)Update(){
+func (c ProductController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	product := models.Product{}
-	err := models.FindOrFail(&product,id)
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&product, id)
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if(input["name"] != ""){
+	if (input["name"] != "") {
 		product.Name = input["name"]
 	}
-	if(input["description"] != ""){
+	if (input["description"] != "") {
 		product.Description = input["description"]
 	}
-	if(input["photo"] != ""){
+	if (input["photo"] != "") {
 		product.Photo = input["photo"]
 	}
-	if(input["product_category_id"] != ""){
+	if (input["product_category_id"] != "") {
 		productCategory := models.ProductCategory{}
-		err := models.FindOrFail(&productCategory,services.ConvertParametersToIntegers(input["product_category_id"]))
-		if(err != nil){
-			if(err == orm.ErrNoRows){
+		err := models.FindOrFail(&productCategory, services.ConvertParametersToIntegers(input["product_category_id"]))
+		if (err != nil) {
+			if (err == orm.ErrNoRows) {
 				c.Ctx.Output.Status = 404
 				c.Data["json"] = map[string]string{"Error":"Resource not found"}
 				c.ServeJSON()
@@ -195,12 +195,12 @@ func (c ProductController)Update(){
 	c.ServeJSON()
 }
 
-func (c ProductController)Destroy(){
+func (c ProductController) Destroy() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	product := models.Product{}
-	err := models.FindOrFail(&product,id)
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&product, id)
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()

@@ -13,24 +13,24 @@ type SuppliersController struct {
 	beego.Controller
 }
 
-func (c SuppliersController)Index(){
+func (c SuppliersController) Index() {
 	data := c.Ctx.Input.Data()
 	tenant := data["ActiveTenant"].(models.Tenant)
 	suppliers := []models.Supplier{}
 	q := o.QueryTable("supplier")
-	q.Filter("tenant_id",tenant.Id).RelatedSel("tenant").All(&suppliers)
+	q.Filter("tenant_id", tenant.Id).RelatedSel("tenant").All(&suppliers)
 	c.Data["json"] = suppliers
 	c.ServeJSON()
 }
 
-func (c SuppliersController) Store(){
+func (c SuppliersController) Store() {
 	data := c.Ctx.Input.Data()
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	valid := validation.Validation{}
-	valid.Required(input["names"],"Names")
-	valid.Required(input["mobile"],"Phone Number")
-	if(valid.HasErrors()){
+	valid.Required(input["names"], "Names")
+	valid.Required(input["mobile"], "Phone Number")
+	if (valid.HasErrors()) {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = valid.ErrorsMap
 		c.ServeJSON()
@@ -43,8 +43,8 @@ func (c SuppliersController) Store(){
 		Mobile: input["mobile"],
 		Tenant: &ActiveTenant,
 	}
-	_,err := o.Insert(&newSupplier)
-	if(err != nil){
+	_, err := o.Insert(&newSupplier)
+	if (err != nil) {
 		c.Ctx.Output.Status = 500
 		c.Data["json"] = err.Error()
 		c.ServeJSON()
@@ -54,30 +54,30 @@ func (c SuppliersController) Store(){
 	c.ServeJSON()
 }
 
-func(c SuppliersController)Update(){
+func (c SuppliersController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
-	json.Unmarshal(c.Ctx.Input.RequestBody,&input)
+	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	supplier := models.Supplier{}
-	err := models.FindOrFail(&supplier,id)
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&supplier, id)
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if(input["names"] != ""){
+	if (input["names"] != "") {
 		supplier.Names = input["names"]
 	}
-	if(input["company"] != ""){
+	if (input["company"] != "") {
 		supplier.Company = input["company"]
 	}
-	if(input["email"] != ""){
+	if (input["email"] != "") {
 		supplier.Email = input["email"]
 	}
-	if(input["mobile"] != ""){
+	if (input["mobile"] != "") {
 		supplier.Mobile = input["mobile"]
 	}
 	o.Update(&supplier)
@@ -85,12 +85,12 @@ func(c SuppliersController)Update(){
 	c.ServeJSON()
 }
 
-func (c SuppliersController)Destroy(){
+func (c SuppliersController) Destroy() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	supplier := models.Supplier{}
-	err := models.FindOrFail(&supplier,id)
-	if(err != nil){
-		if(err == orm.ErrNoRows){
+	err := models.FindOrFail(&supplier, id)
+	if (err != nil) {
+		if (err == orm.ErrNoRows) {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
