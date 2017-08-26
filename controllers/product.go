@@ -30,7 +30,7 @@ func (c ProductCategoryController) Store() {
 	valid := validation.Validation{}
 	valid.Required(input["name"], "name")
 	valid.Required(input["description"], "description")
-	if (valid.HasErrors()) {
+	if valid.HasErrors() {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = valid.ErrorsMap
 		c.ServeJSON()
@@ -59,18 +59,18 @@ func (c ProductCategoryController) Update() {
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	productCategory := models.ProductCategory{}
 	err := models.FindOrFail(&productCategory, id)
-	if (err != nil) {
-		if (err == orm.ErrNoRows) {
+	if err != nil {
+		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if (input["name"] != "") {
+	if input["name"] != "" {
 		productCategory.Name = input["name"]
 	}
-	if (input["description"] != "") {
+	if input["description"] != "" {
 		productCategory.Description = input["description"]
 	}
 	o.Update(&productCategory)
@@ -82,8 +82,8 @@ func (c ProductCategoryController) Destroy() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	productCategory := models.ProductCategory{}
 	err := models.FindOrFail(&productCategory, id)
-	if (err != nil) {
-		if (err == orm.ErrNoRows) {
+	if err != nil {
+		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
@@ -118,7 +118,7 @@ func (c ProductController) Store() {
 	valid.Required(input["description"], "description")
 	valid.Required(input["photo"], "photo")
 	valid.Required(input["product_category_id"], "product category")
-	if (valid.HasErrors()) {
+	if valid.HasErrors() {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = valid.ErrorsMap
 		c.ServeJSON()
@@ -126,8 +126,8 @@ func (c ProductController) Store() {
 	}
 	productCategory := models.ProductCategory{}
 	err := models.FindOrFail(&productCategory, services.ConvertParametersToIntegers(input["product_category_id"]))
-	if (err != nil) {
-		if (err == orm.ErrNoRows) {
+	if err != nil {
+		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
@@ -159,28 +159,28 @@ func (c ProductController) Update() {
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	product := models.Product{}
 	err := models.FindOrFail(&product, id)
-	if (err != nil) {
-		if (err == orm.ErrNoRows) {
+	if err != nil {
+		if  err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if (input["name"] != "") {
+	if input["name"] != "" {
 		product.Name = input["name"]
 	}
-	if (input["description"] != "") {
+	if input["description"] != "" {
 		product.Description = input["description"]
 	}
-	if (input["photo"] != "") {
+	if input["photo"] != "" {
 		product.Photo = input["photo"]
 	}
-	if (input["product_category_id"] != "") {
+	if input["product_category_id"] != "" {
 		productCategory := models.ProductCategory{}
 		err := models.FindOrFail(&productCategory, services.ConvertParametersToIntegers(input["product_category_id"]))
-		if (err != nil) {
-			if (err == orm.ErrNoRows) {
+		if err != nil {
+			if err == orm.ErrNoRows {
 				c.Ctx.Output.Status = 404
 				c.Data["json"] = map[string]string{"Error":"Resource not found"}
 				c.ServeJSON()
@@ -199,8 +199,8 @@ func (c ProductController) Destroy() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	product := models.Product{}
 	err := models.FindOrFail(&product, id)
-	if (err != nil) {
-		if (err == orm.ErrNoRows) {
+	if err != nil {
+		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
 			c.Data["json"] = map[string]string{"Error":"Resource not found"}
 			c.ServeJSON()

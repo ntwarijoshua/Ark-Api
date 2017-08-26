@@ -6,6 +6,7 @@ import (
 	"time"
 	"fmt"
 	"os"
+	"reflect"
 )
 
 var o orm.Ormer
@@ -24,12 +25,17 @@ func init() {
 		new(ProductCategory),
 		new(Product),
 		new(Supplier),
+		new(Inventory),
+		new(Purchase),
+		new(PurchaseList),
 	)
 	err := orm.RunSyncdb(name, force, verbose)
-	if (err != nil) {
+	if err != nil {
 		fmt.Println(err)
 	}
 	o = orm.NewOrm()
+	//For Dev Purposes Only
+	orm.Debug = true
 }
 
 type BaseModel struct {
@@ -131,6 +137,35 @@ type Supplier struct {
 	BaseModel
 }
 
+type Inventory struct {
+	Id int
+	Product *Product `orm:"rel(fk);on_delete(cascade)"`
+	InitialQuantity int
+	ExpiryDate string
+	CurrentQuantity int
+	ClosingQuantity int `orm:"null"`
+	Closed bool `orm:"default(false)"`
+	Tenant  *Tenant `orm:"null;rel(fk);on_delete(cascade)"`
+	BatchNumber string
+	BaseModel
+}
+
+type Purchase struct{
+	Id int
+	Tenant  *Tenant `orm:"null;rel(fk);on_delete(cascade)"`
+	BaseModel
+}
+
+type PurchaseList struct {
+	Id int
+	Purchase *Purchase `orm:"rel(fk);on_delete(cascade)"`
+	Product *Product `orm:"rel(fk);on_delete(cascade)"`
+	Quantity int
+	ExpiryDate string
+	BatchNumber string
+	BaseModel
+}
+
 
 
 
@@ -181,6 +216,62 @@ func GetManagerRole() Role {
 	q := o.QueryTable("role")
 	q.Filter("slug", "manager").One(&role)
 	return role
+}
+
+
+
+//Inventory Calculations
+type InventoryReport struct {
+	Id int
+	Product_name string
+	In_stock_value int
+	Batches []map[string]interface{}
+}
+
+type InventoryResultContainer struct {
+	Id int
+	Name string
+	Current_quantity int
+	Inventory_id int
+	Inventory_initial_qty int
+	Inventory_expiry_date string
+	Inventory_closing_qty int
+	Is_inventory_closed bool
+}
+func GetProductInventory(id int,container *InventoryReport)error{
+	data := []InventoryResultContainer{}
+	_,err := o.Raw("SELECT " +
+		"product.id,product.name," +
+		"inventory.current_quantity," +
+		" inventory.id AS inventory_id," +
+		"inventory.initial_quantity AS inventory_initial_qty," +
+		" inventory.expiry_date AS inventory_expiry_date," +
+		"inventory.closing_quantity AS inventory_closing_qty," +
+		"inventory.closed as is_inventory_closed FROM product RIGHT JOIN inventory ON product.id = inventory.product_id WHERE product.id = ? AND inventory.closed = ?",id,false).QueryRows(&data)
+
+	if err != nil{
+		return  err
+	}
+	fmt.Println(data)
+	var StockQtyTotal int = 0
+	for key := range data{
+		StockQtyTotal = StockQtyTotal+ data[key].Current_quantity
+		if container.Id <= 0 {
+			reflect.ValueOf(container).Elem().FieldByName("Id").SetInt(int64(data[key].Id))
+		}else if container.Product_name == ""{
+			reflect.ValueOf(container).Elem().FieldByName("Product_name").SetString(data[key].Name)
+		}
+		container.Batches = append(container.Batches,map[string]interface{}{
+			"batch_id":data[key].Inventory_id,
+			"batch_initial_quantity":data[key].Inventory_initial_qty,
+			"batch_current_quantity":data[key].Current_quantity,
+			"batch_expiry_date":data[key].Inventory_expiry_date,
+			"is_batch_closed":data[key].Is_inventory_closed,
+			"batch_closing_quantity":data[key].Inventory_closing_qty,
+		})
+	}
+	reflect.ValueOf(container).Elem().FieldByName("In_stock_value").SetInt(int64(StockQtyTotal))
+	return nil
 }
 
 

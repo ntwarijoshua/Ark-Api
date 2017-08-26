@@ -8,7 +8,6 @@
 package routers
 
 import (
-	_"github.com/joho/godotenv/autoload"
 	"ark-api/controllers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
@@ -29,13 +28,13 @@ func init() {
 			ctx.Output.JSON(map[string]string{"Message":"Ark-Api V1"}, true, true)
 		}),
 	).Filter("before", func(ctx *context.Context) {
-		if (ctx.Request.Header.Get("x-api-key") == "") {
+		if ctx.Request.Header.Get("x-api-key") == "" {
 			ctx.Output.Status = 401
 			ctx.Output.JSON(map[string]string{"Error":"Access Denied"}, true, true)
 			return
 		}
 		tenant, ok := AuthenticateTenant(ctx.Request.Header.Get("x-api-key"))
-		if (!ok) {
+		if !ok {
 			ctx.Output.Status = 401
 			ctx.Output.JSON(map[string]string{"Error":"Access Denied"}, true, true)
 			return
@@ -98,12 +97,19 @@ func init() {
 			beego.NSRouter("/", &controllers.ProductController{}, "post:Store"),
 			beego.NSRouter("/:id", &controllers.ProductController{}, "put:Update"),
 			beego.NSRouter("/:id", &controllers.ProductController{}, "delete:Destroy"),
+
+			beego.NSRouter("/:productId/inventory",&controllers.InventoryController{},"get:Index"),
+
 		),
 		beego.NewNamespace("suppliers",
 			beego.NSRouter("/", &controllers.SuppliersController{}, "get:Index"),
 			beego.NSRouter("/", &controllers.SuppliersController{}, "post:Store"),
 			beego.NSRouter("/:id", &controllers.SuppliersController{}, "put:Update"),
 			beego.NSRouter("/:id", &controllers.SuppliersController{}, "delete:Destroy"),
+		),
+		beego.NewNamespace("purchase",
+			beego.NSRouter("/",&controllers.PurchaseController{},"get:Index"),
+			beego.NSRouter("/",&controllers.PurchaseController{},"post:Store"),
 		),
 	)
 
