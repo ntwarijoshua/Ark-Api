@@ -111,6 +111,9 @@ func init() {
 			beego.NSRouter("/",&controllers.PurchaseController{},"get:Index"),
 			beego.NSRouter("/",&controllers.PurchaseController{},"post:Store"),
 		),
+		beego.NewNamespace("sales",
+			beego.NSRouter("/",&controllers.SalesController{},"post:NewSale"),
+		),
 	)
 
 	beego.AddNamespace(ns)

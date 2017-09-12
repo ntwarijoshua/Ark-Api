@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"ark-api/services"
 	"ark-api/models"
 	"github.com/astaxie/beego/orm"
@@ -11,21 +10,18 @@ import (
 )
 
 type UsersController struct {
-	beego.Controller
+	BaseController
 }
 
 func (c UsersController) Index() {
-	data := c.Ctx.Input.Data()
-	tenant := data["ActiveTenant"].(models.Tenant)
 	users := []models.User{}
 	q := o.QueryTable("user")
-	q.Filter("tenant_id", tenant.Id).RelatedSel("tenant", "role").All(&users)
+	q.Filter("tenant_id", c.ActiveTenant.Id).RelatedSel("tenant", "role").All(&users)
 	c.Data["json"] = users
 	c.ServeJSON()
 }
 
 func (c UsersController) Store() {
-	data := c.Ctx.Input.Data()
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	valid := validation.Validation{}
@@ -39,14 +35,13 @@ func (c UsersController) Store() {
 		c.ServeJSON()
 		return
 	}
-	tenant := data["ActiveTenant"].(models.Tenant)
 	managerRole := models.GetManagerRole()
 	newUser := models.User{
 		Names:input["names"],
 		UserName:input["username"],
 		Email:input["email"],
 		Password:services.HashPassword(input["password"]),
-		Tenant:&tenant,
+		Tenant:&c.ActiveTenant,
 		Role : &managerRole,
 	}
 	if user, err := newUser.FindByEmailOrFail(newUser.Email); err != orm.ErrNoRows && !reflect.DeepEqual(user, models.User{}) {

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"ark-api/models"
 	"encoding/json"
 	"github.com/astaxie/beego/validation"
@@ -10,7 +9,7 @@ import (
 )
 
 type SuppliersController struct {
-	beego.Controller
+	BaseController
 }
 
 func (c SuppliersController) Index() {

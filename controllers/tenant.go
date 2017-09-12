@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 	"ark-api/models"
@@ -11,7 +10,7 @@ import (
 )
 
 type TenantsController struct {
-	beego.Controller
+	BaseController
 }
 
 var o orm.Ormer
