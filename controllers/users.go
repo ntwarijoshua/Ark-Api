@@ -13,6 +13,11 @@ type UsersController struct {
 	BaseController
 }
 
+func(c UsersController) Authenticate(){
+	c.Data["json"] = c.ActiveUser
+	c.ServeJSON()
+}
+
 func (c UsersController) Index() {
 	users := []models.User{}
 	q := o.QueryTable("user")

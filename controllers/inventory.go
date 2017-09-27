@@ -130,6 +130,10 @@ func (c SalesController) NewSale() {
 	//Create a slice of SoldItem instances
 	soldItems := []models.SoldItems{}
 	list := input["sold_items"].([]interface{})
+	//Create a new instance of the Sales Model!
+	newSale := models.Sales{
+		Tenant: &activeTenant,
+	}
 	for key := range list {
 		i := list[key].(map[string]interface{})
 		sold_qty, _ := strconv.ParseInt(i["sold_qty"].(string), 10, 64)
@@ -153,10 +157,7 @@ func (c SalesController) NewSale() {
 			c.ServeJSON()
 			return
 		}
-		//Create a new instance of the Sales Model!
-		newSale := models.Sales{
-			Tenant: &activeTenant,
-		}
+
 		o.Insert(&newSale)
 		//Find Inventory and update it
 		inventory := models.Inventory{}

@@ -4,6 +4,7 @@ import:
   version: v1.8.3
   subpackages:
   - orm
+  - plugins/cors
 - package: github.com/go-sql-driver/mysql
   version: ^1.3.0
 - package: github.com/joho/godotenv
