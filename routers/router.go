@@ -111,13 +111,13 @@ func init() {
 func tenantCheckPoint(ctx *context.Context) {
 	if ctx.Request.Header.Get("x-api-key") == "" {
 		ctx.Output.Status = 401
-		ctx.Output.JSON(map[string]string{"Error":"Access Denied, x-api-key header value is not valid"}, true, true)
+		ctx.Output.JSON(map[string]string{"Error":"Access Denied, x-api-key header value is empty"}, true, true)
 		return
 	}
 	tenant, ok := AuthenticateTenant(ctx.Request.Header.Get("x-api-key"))
 	if !ok {
 		ctx.Output.Status = 401
-		ctx.Output.JSON(map[string]string{"Error":"Access Denied, Authorization header value is not valid"}, true, true)
+		ctx.Output.JSON(map[string]string{"Error":"Access Denied, x-api-key header value is not valid"}, true, true)
 		return
 	}
 	ctx.Input.SetData("ActiveTenant", tenant)
