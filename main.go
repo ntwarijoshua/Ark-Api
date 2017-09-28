@@ -1,12 +1,12 @@
 package main
 
 import (
-	_"github.com/joho/godotenv/autoload"
 	_ "ark-api/routers"
-	"github.com/astaxie/beego"
-	"os"
-)
+	_ "ark-api/seeders"
+	os "os"
 
+	beego "github.com/astaxie/beego"
+)
 
 func main() {
 	if beego.BConfig.RunMode == os.Getenv("RUN_MODE") {

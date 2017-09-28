@@ -1,14 +1,16 @@
 package controllers
 
 import (
+	"ark-api/models"
+	"ark-api/services"
+	"encoding/json"
+	"reflect"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
-	"ark-api/models"
-	"encoding/json"
-	"ark-api/services"
-	"reflect"
 )
 
+//TenantsController holds all the bussiness logic regarding tenants.
 type TenantsController struct {
 	BaseController
 }
@@ -19,6 +21,7 @@ func init() {
 	o = orm.NewOrm()
 }
 
+//Index returns all tenants
 func (c TenantsController) Index() {
 	tenants := []models.Tenant{}
 	q := o.QueryTable("tenant")
@@ -27,6 +30,7 @@ func (c TenantsController) Index() {
 	c.ServeJSON()
 }
 
+//Store save a tenant
 func (c TenantsController) Store() {
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
@@ -46,7 +50,7 @@ func (c TenantsController) Store() {
 		Name:        input["name"],
 		Email:       input["email"],
 		PhoneNumber: input["phone_number"],
-		ApiKey:      services.GenerateApiKey(),
+		APIKey:      services.GenerateApiKey(),
 		IsActive:    true,
 		IsMaster:    false,
 	}
@@ -67,6 +71,7 @@ func (c TenantsController) Store() {
 	c.ServeJSON()
 }
 
+//Update edits a tenant.
 func (c TenantsController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
@@ -92,6 +97,7 @@ func (c TenantsController) Update() {
 	c.ServeJSON()
 }
 
+//Destroy deletes a tenant.
 func (c TenantsController) Destroy() {
 	data := c.Ctx.Input.Data()
 	activeTenant := data["ActiveTenant"].(models.Tenant)
@@ -104,7 +110,7 @@ func (c TenantsController) Destroy() {
 		c.ServeJSON()
 		return
 	}
-	if tenant.Id == activeTenant.Id {
+	if tenant.ID == activeTenant.ID {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = map[string]string{"Error": "Bad request"}
 		c.ServeJSON()

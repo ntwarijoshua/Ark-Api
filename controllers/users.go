@@ -1,31 +1,36 @@
 package controllers
 
 import (
-	"ark-api/services"
 	"ark-api/models"
-	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego/validation"
+	"ark-api/services"
 	"encoding/json"
 	"reflect"
+
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/validation"
 )
 
+//UsersController holds all the bussiness logic regarding users.
 type UsersController struct {
 	BaseController
 }
 
-func(c UsersController) Authenticate(){
+//Authenticate returns the authenticated user.
+func (c UsersController) Authenticate() {
 	c.Data["json"] = c.ActiveUser
 	c.ServeJSON()
 }
 
+//Index returns all users.
 func (c UsersController) Index() {
 	users := []models.User{}
 	q := o.QueryTable("user")
-	q.Filter("tenant_id", c.ActiveTenant.Id).RelatedSel("tenant", "role").All(&users)
+	q.Filter("tenant_id", c.ActiveTenant.ID).RelatedSel("tenant", "role").All(&users)
 	c.Data["json"] = users
 	c.ServeJSON()
 }
 
+//Store saves a user.
 func (c UsersController) Store() {
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
@@ -42,16 +47,16 @@ func (c UsersController) Store() {
 	}
 	managerRole := models.GetManagerRole()
 	newUser := models.User{
-		Names:input["names"],
-		UserName:input["username"],
-		Email:input["email"],
-		Password:services.HashPassword(input["password"]),
-		Tenant:&c.ActiveTenant,
-		Role : &managerRole,
+		Names:    input["names"],
+		UserName: input["username"],
+		Email:    input["email"],
+		Password: services.HashPassword(input["password"]),
+		Tenant:   &c.ActiveTenant,
+		Role:     &managerRole,
 	}
 	if user, err := newUser.FindByEmailOrFail(newUser.Email); err != orm.ErrNoRows && !reflect.DeepEqual(user, models.User{}) {
 		c.Ctx.Output.Status = 400
-		c.Data["json"] = map[string]string{"Error":"Bad request", "Message":"User With Email Already Exists"}
+		c.Data["json"] = map[string]string{"Error": "Bad request", "Message": "User With Email Already Exists"}
 		c.ServeJSON()
 		return
 	}
@@ -60,50 +65,52 @@ func (c UsersController) Store() {
 	c.ServeJSON()
 }
 
+//Update edits a user.
 func (c UsersController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	user := models.User{}
 	err := models.FindOrFail(&user, id)
-	if (err != nil) {
-		if (err == orm.ErrNoRows) {
+	if err != nil {
+		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
-			c.Data["json"] = map[string]string{"Error":"Resource not found"}
+			c.Data["json"] = map[string]string{"Error": "Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if (input["names"] != "") {
+	if input["names"] != "" {
 		user.Names = input["names"]
 	}
-	if (input["username"] != "") {
+	if input["username"] != "" {
 		user.UserName = input["username"]
 	}
 	o.Update(&user)
-	o.QueryTable("user").Filter("id", user.Id).RelatedSel("tenant", "role").One(&user)
+	o.QueryTable("user").Filter("id", user.ID).RelatedSel("tenant", "role").One(&user)
 	c.Data["json"] = user
 	c.ServeJSON()
 
 }
 
+//Destroy deletes a user
 func (c UsersController) Destroy() {
 	data := c.Ctx.Input.Data()
 	authenticatedUser := data["AuthenticatedUser"].(models.User)
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	user := models.User{}
 	err := models.FindOrFail(&user, id)
-	if (err != nil) {
-		if (err == orm.ErrNoRows) {
+	if err != nil {
+		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
-			c.Data["json"] = map[string]string{"Error":"Resource not found"}
+			c.Data["json"] = map[string]string{"Error": "Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
-	if (user.Id == authenticatedUser.Id) {
+	if user.ID == authenticatedUser.ID {
 		c.Ctx.Output.Status = 400
-		c.Data["json"] = map[string]string{"Error":"Bad request"}
+		c.Data["json"] = map[string]string{"Error": "Bad request"}
 		c.ServeJSON()
 		return
 	}
@@ -112,13 +119,14 @@ func (c UsersController) Destroy() {
 	c.ServeJSON()
 }
 
+//CreateTenantMasterUser is initiated by the system to create a master user for a tenant account.
 func (c UsersController) CreateTenantMasterUser() {
-	tenant_id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":tenantId"))
+	tenantID := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":tenantId"))
 	tenant := models.Tenant{}
-	err := tenant.FindOrFail(tenant_id)
-	if (err == orm.ErrNoRows) {
+	err := tenant.FindOrFail(tenantID)
+	if err == orm.ErrNoRows {
 		c.Ctx.Output.Status = 404
-		c.Data["json"] = map[string]string{"Error":"Tenant not found"}
+		c.Data["json"] = map[string]string{"Error": "Tenant not found"}
 		c.ServeJSON()
 		return
 	}
@@ -138,16 +146,16 @@ func (c UsersController) CreateTenantMasterUser() {
 
 	adminRole := models.GetAdminRole()
 	newUser := models.User{
-		Names:input["names"],
-		UserName:input["username"],
-		Email:input["email"],
-		Password:services.HashPassword(input["password"]),
-		Tenant:&tenant,
-		Role : &adminRole,
+		Names:    input["names"],
+		UserName: input["username"],
+		Email:    input["email"],
+		Password: services.HashPassword(input["password"]),
+		Tenant:   &tenant,
+		Role:     &adminRole,
 	}
 	if user, err := newUser.FindByEmailOrFail(newUser.Email); err != orm.ErrNoRows && !reflect.DeepEqual(user, models.User{}) {
 		c.Ctx.Output.Status = 400
-		c.Data["json"] = map[string]string{"Error":"Bad request", "Message":"User With Email Already Exists"}
+		c.Data["json"] = map[string]string{"Error": "Bad request", "Message": "User With Email Already Exists"}
 		c.ServeJSON()
 		return
 	}

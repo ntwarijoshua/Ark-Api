@@ -2,26 +2,30 @@ package controllers
 
 import (
 	"ark-api/models"
-	"encoding/json"
-	"github.com/astaxie/beego/validation"
 	"ark-api/services"
+	"encoding/json"
+
 	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/validation"
 )
 
+//ProductCategoryController holds all bussiness logic regarding product categories.
 type ProductCategoryController struct {
 	BaseController
 }
 
+//Index returns all product categories.
 func (c ProductCategoryController) Index() {
 	data := c.Ctx.Input.Data()
 	tenant := data["ActiveTenant"].(models.Tenant)
 	productCategories := []models.ProductCategory{}
 	q := o.QueryTable("product_category")
-	q.Filter("tenant_id", tenant.Id).RelatedSel("tenant").All(&productCategories)
+	q.Filter("tenant_id", tenant.ID).RelatedSel("tenant").All(&productCategories)
 	c.Data["json"] = productCategories
 	c.ServeJSON()
 }
 
+//Store save a product category.
 func (c ProductCategoryController) Store() {
 	data := c.Ctx.Input.Data()
 	input := make(map[string]string)
@@ -37,9 +41,9 @@ func (c ProductCategoryController) Store() {
 	}
 	ActiveTenant := data["ActiveTenant"].(models.Tenant)
 	NewProductCategory := models.ProductCategory{
-		Name:input["name"],
-		Description:input["description"],
-		Tenant: &ActiveTenant,
+		Name:        input["name"],
+		Description: input["description"],
+		Tenant:      &ActiveTenant,
 	}
 	_, err := o.Insert(&NewProductCategory)
 	if err != nil {
@@ -52,6 +56,7 @@ func (c ProductCategoryController) Store() {
 	c.ServeJSON()
 }
 
+//Update edits a product category
 func (c ProductCategoryController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
@@ -61,7 +66,7 @@ func (c ProductCategoryController) Update() {
 	if err != nil {
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
-			c.Data["json"] = map[string]string{"Error":"Resource not found"}
+			c.Data["json"] = map[string]string{"Error": "Resource not found"}
 			c.ServeJSON()
 			return
 		}
@@ -77,6 +82,7 @@ func (c ProductCategoryController) Update() {
 	c.ServeJSON()
 }
 
+//Destroy deletes a product category.
 func (c ProductCategoryController) Destroy() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	productCategory := models.ProductCategory{}
@@ -84,7 +90,7 @@ func (c ProductCategoryController) Destroy() {
 	if err != nil {
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
-			c.Data["json"] = map[string]string{"Error":"Resource not found"}
+			c.Data["json"] = map[string]string{"Error": "Resource not found"}
 			c.ServeJSON()
 			return
 		}
@@ -94,20 +100,23 @@ func (c ProductCategoryController) Destroy() {
 	c.ServeJSON()
 }
 
+//ProductController holds all the bussiness logic regarding products
 type ProductController struct {
 	BaseController
 }
 
+//Index returns all products.
 func (c ProductController) Index() {
 	data := c.Ctx.Input.Data()
 	tenant := data["ActiveTenant"].(models.Tenant)
 	products := []models.Product{}
 	q := o.QueryTable("product")
-	q.Filter("tenant_id", tenant.Id).RelatedSel("tenant", "ProductCategory").All(&products)
+	q.Filter("tenant_id", tenant.ID).RelatedSel("tenant", "ProductCategory").All(&products)
 	c.Data["json"] = products
 	c.ServeJSON()
 }
 
+//Store saves products
 func (c ProductController) Store() {
 	data := c.Ctx.Input.Data()
 	input := make(map[string]string)
@@ -128,18 +137,18 @@ func (c ProductController) Store() {
 	if err != nil {
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
-			c.Data["json"] = map[string]string{"Error":"Resource not found"}
+			c.Data["json"] = map[string]string{"Error": "Resource not found"}
 			c.ServeJSON()
 			return
 		}
 	}
 	ActiveTenant := data["ActiveTenant"].(models.Tenant)
 	NewProduct := models.Product{
-		Name:input["name"],
-		Description:input["description"],
-		Photo:input["photo"],
+		Name:            input["name"],
+		Description:     input["description"],
+		Photo:           input["photo"],
 		ProductCategory: &productCategory,
-		Tenant: &ActiveTenant,
+		Tenant:          &ActiveTenant,
 	}
 	_, err = o.Insert(&NewProduct)
 	if err != nil {
@@ -152,6 +161,7 @@ func (c ProductController) Store() {
 	c.ServeJSON()
 }
 
+//Update edits a product
 func (c ProductController) Update() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	input := make(map[string]string)
@@ -159,9 +169,9 @@ func (c ProductController) Update() {
 	product := models.Product{}
 	err := models.FindOrFail(&product, id)
 	if err != nil {
-		if  err == orm.ErrNoRows {
+		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
-			c.Data["json"] = map[string]string{"Error":"Resource not found"}
+			c.Data["json"] = map[string]string{"Error": "Resource not found"}
 			c.ServeJSON()
 			return
 		}
@@ -181,7 +191,7 @@ func (c ProductController) Update() {
 		if err != nil {
 			if err == orm.ErrNoRows {
 				c.Ctx.Output.Status = 404
-				c.Data["json"] = map[string]string{"Error":"Resource not found"}
+				c.Data["json"] = map[string]string{"Error": "Resource not found"}
 				c.ServeJSON()
 				return
 			}
@@ -194,6 +204,7 @@ func (c ProductController) Update() {
 	c.ServeJSON()
 }
 
+//Destroy deletes a product
 func (c ProductController) Destroy() {
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
 	product := models.Product{}
@@ -201,7 +212,7 @@ func (c ProductController) Destroy() {
 	if err != nil {
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
-			c.Data["json"] = map[string]string{"Error":"Resource not found"}
+			c.Data["json"] = map[string]string{"Error": "Resource not found"}
 			c.ServeJSON()
 			return
 		}

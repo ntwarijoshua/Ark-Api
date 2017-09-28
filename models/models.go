@@ -1,19 +1,21 @@
 package models
 
 import (
-	_"github.com/go-sql-driver/mysql"
-	"github.com/astaxie/beego/orm"
-	"time"
 	"fmt"
-	"os"
+	os "os"
+	time "time"
+
+	orm "github.com/astaxie/beego/orm"
+	//used by beego orm
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var o orm.Ormer
 
 func init() {
-	fmt.Println("Datasource:", os.Getenv("DATA_SOURCE"))
+	fmt.Println("Datasource:", os.Getenv("ARK_API_DATASOURCE"))
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	orm.RegisterDataBase("default", "mysql", os.Getenv("DATA_SOURCE"), 30)
+	orm.RegisterDataBase("default", "mysql", os.Getenv("ARK_API_DATASOURCE"), 30)
 	name := "default"
 	force := false
 	verbose := true
@@ -39,15 +41,15 @@ func init() {
 	orm.Debug = true
 }
 
+//BaseModel is a structure that contains all fields that other models should embed
 type BaseModel struct {
 	CreatedAt time.Time `orm:"column(created_at);type(datetime);auto_now_add"`
 	UpdatedAt time.Time `orm:"column(updated_at);type(datetime);auto_now_add"`
 }
 
-//Standalone Global Functions
-
+//FindOrFail is a method embeded on all models that allows them to query for a row by id
 func FindOrFail(m interface{}, id int) error {
-	switch t := m.(type)  {
+	switch t := m.(type) {
 	case *Tenant:
 		q := o.QueryTable("tenant")
 		err := q.Filter("id", id).One(m.(*Tenant))
@@ -71,16 +73,13 @@ func FindOrFail(m interface{}, id int) error {
 		return err
 	case *Inventory:
 		q := o.QueryTable("inventory")
-		err := q.Filter("id",id).One(m.(*Inventory))
+		err := q.Filter("id", id).One(m.(*Inventory))
 		return err
 	default:
 		fmt.Println("Unsupported type: ", t)
 		return orm.ErrNoRows
 	}
-	return nil
 }
 func finder(q orm.QuerySeter, container interface{}) error {
 	return q.One(container)
 }
-
-

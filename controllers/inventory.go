@@ -2,29 +2,32 @@ package controllers
 
 import (
 	"ark-api/models"
-	"encoding/json"
-	"github.com/astaxie/beego/validation"
-	"github.com/astaxie/beego/orm"
-	_"fmt"
-	"ark-api/services"
-	"strconv"
+	services "ark-api/services"
 	"ark-api/utils/data/types"
+	"encoding/json"
+	"strconv"
+
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/validation"
 )
 
+//PurchaseController holds all the purchase bussiness logic
 type PurchaseController struct {
 	BaseController
 }
 
+//Index returns all purchases.
 func (c PurchaseController) Index() {
 	data := c.Ctx.Input.Data()
 	purchases := []models.Purchase{}
 	tenant := data["ActiveTenant"].(models.Tenant)
 	q := o.QueryTable("purchase")
-	q.Filter("tenant_id", tenant.Id).RelatedSel("tenant").All(&purchases)
+	q.Filter("tenant_id", tenant.ID).RelatedSel("tenant").All(&purchases)
 	c.Data["json"] = purchases
 	c.ServeJSON()
 }
 
+//Store save a purchase to the database.
 func (c PurchaseController) Store() {
 	data := c.Ctx.Input.Data()
 	input := make(map[string]interface{})
@@ -86,29 +89,32 @@ func (c PurchaseController) Store() {
 	c.ServeJSON()
 }
 
+//InventoryController holds all the bussiness logic regarding the inventory
 type InventoryController struct {
 	BaseController
 }
 
+//Index returns an inventory analysis
 func (c InventoryController) Index() {
-	product_id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":productId"))
-	inventory_report := types.InventoryReport{}
-	err := models.GetProductInventory(product_id, &inventory_report)
+	productID := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":productId"))
+	inventoryReport := types.InventoryReport{}
+	err := models.GetProductInventory(productID, &inventoryReport)
 	if err != nil {
-		panic(err)
 		c.Ctx.Output.Status = 500
 		c.Data["json"] = map[string]string{"Error": "Whoops! something went wrong"}
 		c.ServeJSON()
 		return
 	}
-	c.Data["json"] = inventory_report
+	c.Data["json"] = inventoryReport
 	c.ServeJSON()
 }
 
+//SalesController holds all bussiness logic regarding sales
 type SalesController struct {
 	BaseController
 }
 
+//NewSale create a new sale
 func (c SalesController) NewSale() {
 	//Get the request data
 	data := c.Ctx.Input.Data()
@@ -136,12 +142,12 @@ func (c SalesController) NewSale() {
 	}
 	for key := range list {
 		i := list[key].(map[string]interface{})
-		sold_qty, _ := strconv.ParseInt(i["sold_qty"].(string), 10, 64)
+		soldQty, _ := strconv.ParseInt(i["sold_qty"].(string), 10, 64)
 		productSaleInfo := types.ProductSaleReturnType{
-			SoldQty: int(sold_qty),
+			SoldQty: int(soldQty),
 		}
 		product := models.Product{}
-		err := models.GetProductByBatchNumber(i["batch_number"].(string), activeTenant.Id, &productSaleInfo)
+		err := models.GetProductByBatchNumber(i["batch_number"].(string), activeTenant.ID, &productSaleInfo)
 		if err != nil {
 			if err == orm.ErrNoRows {
 				c.Ctx.Output.Status = 404
@@ -166,7 +172,7 @@ func (c SalesController) NewSale() {
 		o.Update(&inventory)
 
 		//Update Sale with the total price
-		newSale.Total_amount = productSaleInfo.SoldQty * productSaleInfo.Price
+		newSale.TotalAmount = productSaleInfo.SoldQty * productSaleInfo.Price
 		o.Update(&newSale)
 		//Save sold items
 		newSaleItem := models.SoldItems{
@@ -178,6 +184,6 @@ func (c SalesController) NewSale() {
 		soldItems = append(soldItems, newSaleItem)
 	}
 	o.InsertMulti(5, soldItems)
-	c.Data["json"] = models.GenerateInvoiceData(newSale.Id)
+	c.Data["json"] = models.GenerateInvoiceData(newSale.ID)
 	c.ServeJSON()
 }

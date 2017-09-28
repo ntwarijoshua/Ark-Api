@@ -1,7 +1,8 @@
 package models
 
+// Supplier represents suppliers in the system
 type Supplier struct {
-	Id      int
+	ID      int
 	Names   string
 	Company string `orm:"null"`
 	Email   string `orm:"null"`
