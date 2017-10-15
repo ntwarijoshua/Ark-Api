@@ -6,7 +6,7 @@ type Tenant struct {
 	Name        string `json:"name,omitempty"`
 	Email       string `orm:"null;unique" json:"email,omitempty"`
 	PhoneNumber string `json:"phone_number,omitempty"`
-	APIKey      string `json:"api_key,omitempty"`
+	ApiKey      string `json:"api_key,omitempty"`
 	IsActive    bool   `orm:"default(true)" json:"is_active,omitempty"`
 	IsMaster    bool   `orm:"default(false)" json:"is_master,omitempty"`
 	BaseModel   `json:"base_model,omitempty"`
@@ -30,7 +30,7 @@ func (t *Tenant) FindOrFail(id int) error {
 		t.Email = temp.Email
 		t.PhoneNumber = temp.PhoneNumber
 		t.IsMaster = temp.IsMaster
-		t.APIKey = temp.APIKey
+		t.ApiKey = temp.ApiKey
 		t.IsActive = temp.IsActive
 		t.CreatedAt = temp.CreatedAt
 		t.UpdatedAt = temp.UpdatedAt

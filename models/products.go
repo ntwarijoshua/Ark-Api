@@ -6,20 +6,20 @@ import (
 
 // ProductCategory represents a grouping for products
 type ProductCategory struct {
-	ID          int
-	Name        string
-	Description string
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `orm:"null" json:"description"`
 	Tenant      *Tenant `orm:"null;rel(fk);on_delete(cascade)"`
 	BaseModel
 }
 
 // Product represents a product instance in store
 type Product struct {
-	ID              int
-	Name            string
-	Description     string
-	Photo           string
-	ProductCategory *ProductCategory `orm:"null;rel(fk);on_delete(cascade)"`
+	ID              int              `json:"id"`
+	Name            string           `json:"name"`
+	Description     string           `json:"description"`
+	Photo           string           `orm:"type(text)" json:"photo"`
+	ProductCategory *ProductCategory `orm:"null;rel(fk);on_delete(cascade)" json:"product_category"`
 	Tenant          *Tenant          `orm:"null;rel(fk);on_delete(cascade)"`
 	BaseModel
 }

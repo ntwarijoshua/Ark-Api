@@ -18,7 +18,7 @@ func databaseSeeder() {
 		Name:        "root-tenant",
 		Email:       "ntwarijoshua@gmail.com",
 		PhoneNumber: "+250786932945",
-		APIKey:      services.GenerateApiKey(),
+		ApiKey:      services.GenerateApiKey(),
 		IsActive:    true,
 		IsMaster:    true,
 	}

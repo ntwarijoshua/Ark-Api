@@ -50,7 +50,7 @@ func (c TenantsController) Store() {
 		Name:        input["name"],
 		Email:       input["email"],
 		PhoneNumber: input["phone_number"],
-		APIKey:      services.GenerateApiKey(),
+		ApiKey:      services.GenerateApiKey(),
 		IsActive:    true,
 		IsMaster:    false,
 	}

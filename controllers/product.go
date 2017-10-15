@@ -32,7 +32,6 @@ func (c ProductCategoryController) Store() {
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	valid := validation.Validation{}
 	valid.Required(input["name"], "name")
-	valid.Required(input["description"], "description")
 	if valid.HasErrors() {
 		c.Ctx.Output.Status = 400
 		c.Data["json"] = valid.ErrorsMap
