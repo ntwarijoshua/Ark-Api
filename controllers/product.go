@@ -9,25 +9,29 @@ import (
 	"github.com/astaxie/beego/validation"
 )
 
+//"ark-api/models"
+// "ark-api/services"
+// "encoding/json"
+
+//"github.com/astaxie/beego/orm"
+//"github.com/astaxie/beego/validation"
+
 //ProductCategoryController holds all bussiness logic regarding product categories.
 type ProductCategoryController struct {
 	BaseController
+	DataSource *models.ProductCategory
 }
 
 //Index returns all product categories.
-func (c ProductCategoryController) Index() {
-	data := c.Ctx.Input.Data()
-	tenant := data["ActiveTenant"].(models.Tenant)
-	productCategories := []models.ProductCategory{}
-	q := o.QueryTable("product_category")
-	q.Filter("tenant_id", tenant.ID).RelatedSel("tenant").All(&productCategories)
-	c.Data["json"] = productCategories
+func (c *ProductCategoryController) Index() {
+	c.DataSource = models.NewProductCategory(&c.ActiveTenant)
+	c.Data["json"] = c.DataSource.All()
 	c.ServeJSON()
 }
 
 //Store save a product category.
 func (c ProductCategoryController) Store() {
-	data := c.Ctx.Input.Data()
+	c.DataSource = models.NewProductCategory(&c.ActiveTenant)
 	input := make(map[string]string)
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
 	valid := validation.Validation{}
@@ -38,30 +42,22 @@ func (c ProductCategoryController) Store() {
 		c.ServeJSON()
 		return
 	}
-	ActiveTenant := data["ActiveTenant"].(models.Tenant)
-	NewProductCategory := models.ProductCategory{
+	newProductCategory := models.ProductCategory{
 		Name:        input["name"],
 		Description: input["description"],
-		Tenant:      &ActiveTenant,
+		Tenant:      &c.ActiveTenant,
 	}
-	_, err := o.Insert(&NewProductCategory)
-	if err != nil {
-		c.Ctx.Output.Status = 500
-		c.Data["json"] = err.Error()
-		c.ServeJSON()
-		return
-	}
-	c.Data["json"] = NewProductCategory
+	c.Data["json"] = c.DataSource.Create(newProductCategory)
 	c.ServeJSON()
 }
 
 //Update edits a product category
 func (c ProductCategoryController) Update() {
+	c.DataSource = models.NewProductCategory(&c.ActiveTenant)
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
-	input := make(map[string]string)
+	input := make(map[string]interface{})
 	json.Unmarshal(c.Ctx.Input.RequestBody, &input)
-	productCategory := models.ProductCategory{}
-	err := models.FindOrFail(&productCategory, id)
+	result, err := c.DataSource.Find(id)
 	if err != nil {
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
@@ -71,21 +67,21 @@ func (c ProductCategoryController) Update() {
 		}
 	}
 	if input["name"] != "" {
-		productCategory.Name = input["name"]
+		result.Name = input["name"].(string)
 	}
 	if input["description"] != "" {
-		productCategory.Description = input["description"]
+		result.Description = input["description"].(string)
 	}
-	o.Update(&productCategory)
-	c.Data["json"] = productCategory
+	o.Update(&result)
+	c.Data["json"] = result
 	c.ServeJSON()
 }
 
 //Destroy deletes a product category.
 func (c ProductCategoryController) Destroy() {
+	c.DataSource = models.NewProductCategory(&c.ActiveTenant)
 	id := services.ConvertParametersToIntegers(c.Ctx.Input.Param(":id"))
-	productCategory := models.ProductCategory{}
-	err := models.FindOrFail(&productCategory, id)
+	result, err := c.DataSource.Find(id)
 	if err != nil {
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.Status = 404
@@ -94,7 +90,7 @@ func (c ProductCategoryController) Destroy() {
 			return
 		}
 	}
-	o.Delete(&productCategory)
+	result.Delete()
 	c.Ctx.Output.Status = 204
 	c.ServeJSON()
 }

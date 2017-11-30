@@ -25,4 +25,5 @@ func (c *BaseController) Prepare() {
 		"names":    user.Names,
 		"email":    user.Email,
 	}
+
 }

@@ -2,9 +2,18 @@ package models
 
 import (
 	"ark-api/utils/data/types"
+	"fmt"
 )
 
-// ProductCategory represents a grouping for products
+//NewProductCategory : Returns an instance of the productCategories struc
+func NewProductCategory(tenant *Tenant) *ProductCategory {
+	fmt.Println(tenant.ID)
+	p := new(ProductCategory)
+	p.Tenant = tenant
+	return p
+}
+
+// productCategory represents a grouping for products
 type ProductCategory struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
@@ -22,6 +31,63 @@ type Product struct {
 	ProductCategory *ProductCategory `orm:"null;rel(fk);on_delete(cascade)" json:"product_category"`
 	Tenant          *Tenant          `orm:"null;rel(fk);on_delete(cascade)"`
 	BaseModel
+}
+
+//All : Returns all product categories by tenant
+func (p *ProductCategory) All() []ProductCategory {
+	resultset := []ProductCategory{}
+	q := o.QueryTable("product_category")
+	_, err := q.Filter("tenant_id", p.Tenant.ID).RelatedSel("tenant").All(&resultset)
+	if err != nil {
+		panic(err)
+	}
+	return resultset
+}
+
+//Find : Return a single product category
+func (p *ProductCategory) Find(id int) (ProductCategory, error) {
+	result := ProductCategory{}
+	q := o.QueryTable("product_category")
+	err := q.Filter("tenant_id", p.Tenant.ID).Filter("i_d", id).One(&result)
+	return result, err
+}
+
+//Create : Creates a new Product category
+func (p *ProductCategory) Create(productCategory ProductCategory) ProductCategory {
+	_, err := o.Insert(&productCategory)
+	if err != nil {
+		panic(err)
+	}
+	return productCategory
+}
+
+/*
+//To be improved later!!
+func (p *ProductCategory) Update(changes map[string]interface{}) {
+	v := reflect.ValueOf(changes)
+	keys := v.MapKeys()
+	fieldsString := ""
+	valuesString := ""
+	for i := 0; i <= len(keys); i++ {
+		if i != len(keys) {
+			//typeOfValue := reflect.TypeOf(keys[i].String())
+			fieldsString = fieldsString + "," + keys[i].(string)
+			switch t := changes[keys[i].String()].(type) {
+			case int:
+				valuesString = valuesString + "," + changes[keys[i].String()].(int)
+			case string:
+				valuesString = valuesString + "," + changes[keys[i].String()](string)
+			}
+		}
+	}
+	fmt.Println(fieldsString)
+
+}
+*/
+
+//Delete : Deletes a product category
+func (p *ProductCategory) Delete() {
+	o.Delete(p)
 }
 
 //GetProductByBatchNumber queries the database for a product where the criteria is the batch number.
