@@ -2,10 +2,10 @@ package models
 
 // User represents users in the system.
 type User struct {
-	ID       int
-	Names    string
-	UserName string
-	Email    string
+	ID       int	   `json:"id"`
+	Names    string  `json:"names"`
+	UserName string  `json:"user_name"`
+	Email    string	 `json:"email"`
 	Password string  `json:"-"`
 	Tenant   *Tenant `orm:"null;rel(fk);on_delete(cascade)"`
 	Role     *Role   `orm:"null;rel(fk);on_delete(set_null)"`

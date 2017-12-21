@@ -1,10 +1,10 @@
 package services
 
 import (
-	"math/rand"
-	"time"
-	"strconv"
 	"golang.org/x/crypto/bcrypt"
+	"math/rand"
+	"strconv"
+	"time"
 )
 
 var seededRand *rand.Rand = rand.New(
@@ -32,7 +32,7 @@ func ConvertParametersToIntegers(param string) int {
 
 func HashPassword(password string) string {
 	pswd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if (err != nil) {
+	if err != nil {
 		panic("Hashing Password Failed")
 	}
 	stringPwd := string(pswd)

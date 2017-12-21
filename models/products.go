@@ -2,18 +2,16 @@ package models
 
 import (
 	"ark-api/utils/data/types"
-	"fmt"
 )
 
 //NewProductCategory : Returns an instance of the productCategories struc
 func NewProductCategory(tenant *Tenant) *ProductCategory {
-	fmt.Println(tenant.ID)
 	p := new(ProductCategory)
 	p.Tenant = tenant
 	return p
 }
 
-// productCategory represents a grouping for products
+// ProductCategory represents a grouping for products
 type ProductCategory struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`

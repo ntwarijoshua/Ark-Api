@@ -1,11 +1,11 @@
 package plugins
 
 import (
-	"net/http"
 	"encoding/base64"
+	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	"encoding/json"
+	"net/http"
 	"strings"
 )
 
@@ -24,8 +24,7 @@ type SecretProvider func(user, pass string) bool
 
 type CustomBasicAuth struct {
 	Secrets SecretProvider
-	Realm string
-
+	Realm   string
 }
 
 // CheckAuth Checks the username/password combination from the request. Returns
@@ -53,12 +52,11 @@ func (a *CustomBasicAuth) CheckAuth(r *http.Request) string {
 	return ""
 }
 
-
 func (a *CustomBasicAuth) RequireAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("WWW-Authenticate", `Basic realm="`+a.Realm+`"`)
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
-	json.NewEncoder(w).Encode(map[string]string{"Error":"Invalid Credentials"})
+	json.NewEncoder(w).Encode(map[string]string{"Error": "Invalid Credentials"})
 
 }
 
